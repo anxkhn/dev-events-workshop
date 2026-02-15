@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  check-commit-messages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check commit messages
+        run: |
+          # Get commits in PR
+          COMMITS=$(git log --format=%s origin/main..HEAD)
+          
+          # Check each commit message
+          PATTERN='^(feat|fix|docs|style|refactor|test|chore|ci)(\(.+\))?: .{1,}$'
+          
+          while IFS= read -r msg; do
+            if [[ ! "$msg" =~ $PATTERN ]]; then
+              echo "Invalid commit message: '$msg'"
+              echo "Commit messages must follow conventional commits format:"
+              echo "  type(scope): description"
+              echo ""
+              echo "Types: feat, fix, docs, style, refactor, test, chore, ci"
+              echo "Example: fix(events): correct date formatting"
+              exit 1
+            fi
+          done <<< "$COMMITS"
+          
+          echo "All commit messages are valid!"
+
+  check-pr-description:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR description length
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if [ -z "$PR_BODY" ]; then
+            echo "PR description is empty. Please provide a description of your changes."
+            exit 1
+          fi
+          
+          LENGTH=${#PR_BODY}
+          if [ $LENGTH -lt 50 ]; then
+            echo "PR description is too short ($LENGTH characters)."
+            echo "Please provide more details about your changes (at least 50 characters)."
+            exit 1
+          fi
+          
+          echo "PR description looks good!"
