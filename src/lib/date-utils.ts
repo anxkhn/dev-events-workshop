@@ -98,15 +98,14 @@ export function isValidDateString(date: string): boolean {
 
 export function formatEventDateRange(startDate: string, endDate?: string): string {
   const start = parseISO(startDate)
-  
+    
   if (!isValid(start)) {
     return 'Invalid date'
   }
   
   if (!endDate) {
-    return format(start, 'PPP')
+    return format(start, 'MMM')
   }
-  
   const end = parseISO(endDate)
   
   if (!isValid(end)) {
@@ -114,8 +113,8 @@ export function formatEventDateRange(startDate: string, endDate?: string): strin
   }
   
   if (format(start, 'yyyy-MM-dd') === format(end, 'yyyy-MM-dd')) {
-    return format(start, 'PPP')
+    return format(start, 'MMM d, yyyy')
   }
   
-  return `${format(start, 'MMM d')} - ${format(end, 'MMM d, yyyy')}`
+  return `${format(start, 'MMM d')} - ${format(end, 'MMM d')}`
 }
